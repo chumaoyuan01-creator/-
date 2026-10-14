@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作品详情 - 墨韵</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #1c2330;
+            --border: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --accent: #7c8cf8;
+            --accent-glow: rgba(124, 140, 248, 0.15);
+            --accent-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --danger: #f85149;
+            --success: #3fb950;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+        body {
+            font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        .topbar {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .topbar-brand {
+            font-size: 20px;
+            font-weight: 700;
+            background: var(--accent-grad);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .topbar-nav { display: flex; gap: 24px; align-items: center; }
+        .topbar-nav a { color: var(--text-secondary); text-decoration: none; font-size: 14px; transition: color 0.3s; }
+        .topbar-nav a:hover { color: var(--accent); }
+        .content { max-width: 860px; margin: 0 auto; padding: 36px 24px 100px; }
+
+        .work-header {
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 36px 40px;
+            margin-bottom: 28px;
+            box-shadow: var(--shadow);
+        }
+        .work-title {
+            font-size: 28px;
+            font-weight: 700;
+            line-height: 1.4;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #e6edf3 0%, #a9b4ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .work-meta { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
+        .tag {
+            font-size: 12.5px;
+            padding: 5px 14px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--text-secondary);
+        }
+        .tag-accent { color: var(--accent); border-color: var(--accent); background: var(--accent-glow); }
+        .work-toolbar { display: flex; flex-wrap: wrap; gap: 10px; }
+        .tool-btn {
+            padding: 9px 18px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 13.5px;
+            transition: all 0.25s;
+            font-family: inherit;
+        }
+        .tool-btn:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+        .tool-success { border-color: var(--success); color: var(--success); }
+        .tool-success:hover { background: var(--success); color: #fff; }
+
+        .toc {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin-bottom: 28px;
+        }
+        .toc-title { font-size: 13px; color: var(--text-muted); letter-spacing: 2px; margin-bottom: 14px; }
+        .toc-list { display: flex; flex-wrap: wrap; gap: 8px; }
+        .toc-item {
+            padding: 6px 14px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-secondary);
+            transition: all 0.25s;
+        }
+        .toc-item:hover { border-color: var(--accent); color: var(--accent); }
+
+        .article-body { display: flex; flex-direction: column; gap: 28px; }
+        .section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px 40px;
+            box-shadow: var(--shadow);
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 22px;
+            padding-left: 14px;
+            border-left: 4px solid var(--accent);
+            line-height: 1.4;
+        }
+        .section-text {
+            font-size: 16px;
+            line-height: 1.95;
+            color: var(--text-primary);
+            letter-spacing: 0.3px;
+        }
+        .section-text p { margin-bottom: 18px; }
+        .section-text p:last-child { margin-bottom: 0; }
+        .section-text strong.hl {
+            color: #ffe08a;
+            font-weight: 700;
+            background: rgba(255, 224, 138, 0.1);
+            padding: 1px 5px;
+            border-radius: 3px;
+        }
+        .edit-area {
+            width: 100%;
+            min-height: 280px;
+            padding: 16px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 15px;
+            line-height: 1.9;
+            font-family: inherit;
+            resize: vertical;
+            display: none;
+        }
+        .edit-area.show { display: block; }
+        .section-actions { display: flex; gap: 8px; margin-top: 20px; }
+        .mini-btn {
+            padding: 6px 14px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.25s;
+            font-family: inherit;
+        }
+        .mini-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .mini-success { border-color: var(--success); color: var(--success); }
+        .mini-success:hover { background: var(--success); color: #fff; }
+
+        .add-box {
+            margin-top: 32px;
+            padding: 28px;
+            background: var(--bg-secondary);
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            text-align: center;
+        }
+        .add-box-title { font-size: 15px; margin-bottom: 16px; color: var(--text-secondary); }
+        .add-box input {
+            padding: 11px 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 14px;
+            width: 320px;
+            max-width: 100%;
+            margin-right: 10px;
+            font-family: inherit;
+        }
+        .add-box input:focus { outline: none; border-color: var(--accent); }
+
+        .score-panel {
+            margin-top: 28px;
+            padding: 28px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .loading { text-align: center; padding: 80px; color: var(--text-muted); }
+        .loading .spinner {
+            width: 40px; height: 40px;
+            margin: 0 auto 16px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div class="topbar-brand">墨韵</div>
+        <div class="topbar-nav">
+            <a href="/">✍️ 创作</a>
+            <a href="/history">📜 历史</a>
+        </div>
+    </div>
+    <div class="content" id="detailContent">
+        <div class="loading"><div class="spinner"></div>加载中...</div>
+    </div>
+    <script>
+        const articleId = {{ article_id }};
+        let articleData = null;
+
+        function esc(s) {
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function renderContent(text) {
+            let safe = esc(text);
+            safe = safe.replace(/\*\*(.+?)\*\*/g, '<strong class="hl">$1</strong>');
+            const paras = safe.split(/\n{2,}/).map(p => p.trim()).filter(p => p.length > 0);
+            return paras.map(p => '<p>' + p.replace(/\n/g, '<br>') + '</p>').join('');
+        }
+
+        function loadArticle() {
+            fetch('/api/articles/' + articleId)
+            .then(res => res.json())
+            .then(data => {
+                articleData = data;
+                const a = data.article;
+                const chapters = data.chapters;
+                const minutes = Math.max(1, Math.ceil(a.word_count / 400));
+
+                let html = '';
+                html += '<div class="work-header">';
+                html += '<div class="work-title">' + esc(a.title) + '</div>';
+                html += '<div class="work-meta">';
+                html += '<span class="tag tag-accent">' + esc(a.genre) + '</span>';
+                html += '<span class="tag">主题 · ' + esc(a.topic) + '</span>';
+                html += '<span class="tag">关键词 · ' + esc(a.keyword) + '</span>';
+                html += '<span class="tag">' + a.word_count + ' 字</span>';
+                html += '<span class="tag">约 ' + minutes + ' 分钟读完</span>';
+                html += '<span class="tag">' + esc(a.created_at) + '</span>';
+                html += '</div>';
+                html += '<div class="work-toolbar">';
+                html += '<button class="tool-btn" onclick="copyAll()">📋 复制全文</button>';
+                html += '<button class="tool-btn" onclick="downloadAll()">💾 下载TXT</button>';
+                html += '<button class="tool-btn" onclick="exportWord()">📄 导出Word</button>';
+                html += '<button class="tool-btn" onclick="exportPDF()">📑 导出PDF</button>';
+                html += '<button class="tool-btn" onclick="showScore()">📊 文章评分</button>';
+                html += '</div>';
+                html += '</div>';
+
+                if (chapters.length > 1) {
+                    html += '<div class="toc">';
+                    html += '<div class="toc-title">目 录 · 共 ' + chapters.length + ' 部分</div>';
+                    html += '<div class="toc-list">';
+                    chapters.forEach(ch => {
+                        html += '<span class="toc-item" onclick="scrollToChapter(' + ch.id + ')">' + esc(ch.chapter_title) + '</span>';
+                    });
+                    html += '</div></div>';
+                }
+
+                html += '<div class="article-body">';
+                chapters.forEach(ch => {
+                    html += '<section class="section" id="chapter-' + ch.id + '">';
+                    html += '<h2 class="section-title">' + esc(ch.chapter_title) + '</h2>';
+                    html += '<div class="section-text" id="content-' + ch.id + '">' + renderContent(ch.content) + '</div>';
+                    html += '<textarea class="edit-area" id="edit-' + ch.id + '">' + esc(ch.content) + '</textarea>';
+                    html += '<div class="section-actions" id="view-actions-' + ch.id + '">';
+                    html += '<button class="mini-btn" onclick="editChapter(' + ch.id + ')">✏️ 编辑</button>';
+                    html += '<button class="mini-btn mini-success" onclick="regenerateChapter(' + ch.id + ')">🔄 重新生成</button>';
+                    html += '</div>';
+                    html += '<div class="section-actions" id="edit-actions-' + ch.id + '" style="display:none;">';
+                    html += '<button class="mini-btn mini-success" onclick="saveChapter(' + ch.id + ')">💾 保存</button>';
+                    html += '<button class="mini-btn" onclick="cancelEdit(' + ch.id + ')">取消</button>';
+                    html += '</div>';
+                    html += '</section>';
+                });
+                html += '</div>';
+
+                html += '<div class="add-box">';
+                html += '<div class="add-box-title">➕ 续写新章节</div>';
+                html += '<input type="text" id="newChapterTitle" placeholder="章节标题（留空自动生成）">';
+                html += '<button class="tool-btn tool-success" onclick="addChapter()">生成并追加</button>';
+                html += '</div>';
+
+                html += '<div id="scorePanel" class="score-panel" style="display:none;"></div>';
+
+                document.getElementById('detailContent').innerHTML = html;
+            })
+            .catch(() => {
+                document.getElementById('detailContent').innerHTML = '<div class="loading">加载失败，请刷新重试</div>';
+            });
+        }
+
+        function scrollToChapter(id) {
+            document.getElementById('chapter-' + id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function editChapter(id) {
+            document.getElementById('content-' + id).style.display = 'none';
+            document.getElementById('edit-' + id).classList.add('show');
+            document.getElementById('view-actions-' + id).style.display = 'none';
+            document.getElementById('edit-actions-' + id).style.display = 'flex';
+        }
+
+        function cancelEdit(id) {
+            document.getElementById('content-' + id).style.display = 'block';
+            document.getElementById('edit-' + id).classList.remove('show');
+            document.getElementById('view-actions-' + id).style.display = 'flex';
+            document.getElementById('edit-actions-' + id).style.display = 'none';
+        }
+
+        function saveChapter(id) {
+            const content = document.getElementById('edit-' + id).value;
+            fetch('/api/articles/' + articleId + '/chapters/' + id, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: content })
+            })
+            .then(res => res.json())
+            .then(() => {
+                document.getElementById('content-' + id).innerHTML = renderContent(content);
+                cancelEdit(id);
+                alert('已保存');
+            })
+            .catch(() => alert('保存失败，请重试'));
+        }
+
+        function regenerateChapter(id) {
+            if (!confirm('确定重新生成这一部分？原有内容将被替换。')) return;
+            const contentEl = document.getElementById('content-' + id);
+            const oldContent = contentEl.innerHTML;
+            contentEl.innerHTML = '<div class="loading"><div class="spinner"></div>正在重新生成...</div>';
+
+            fetch('/api/articles/' + articleId + '/chapters/' + id + '/regenerate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    contentEl.innerHTML = oldContent;
+                    alert('重新生成失败：' + data.error);
+                } else {
+                    contentEl.innerHTML = renderContent(data.content);
+                    alert('已重新生成，约 ' + data.word_count + ' 字');
+                }
+            })
+            .catch(() => {
+                contentEl.innerHTML = oldContent;
+                alert('请求失败，请重试');
+            });
+        }
+
+        function addChapter() {
+            const title = document.getElementById('newChapterTitle').value.trim();
+            const box = document.querySelector('.add-box');
+            const oldHTML = box.innerHTML;
+            box.innerHTML = '<div class="loading"><div class="spinner"></div>正在续写...</div>';
+
+            fetch('/api/articles/' + articleId + '/chapters', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chapter_title: title || '' })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    box.innerHTML = oldHTML;
+                    alert('续写失败：' + data.error);
+                } else {
+                    loadArticle();
+                    alert('新章节已生成：' + data.chapter_title);
+                }
+            })
+            .catch(() => {
+                box.innerHTML = oldHTML;
+                alert('请求失败，请重试');
+            });
+        }
+
+        function getAllText() {
+            if (!articleData) return '';
+            return articleData.chapters.map(ch => ch.chapter_title + '\n\n' + ch.content).join('\n\n\n');
+        }
+
+        function copyAll() {
+            navigator.clipboard.writeText(getAllText()).then(() => alert('已复制到剪贴板'));
+        }
+
+        function downloadAll() {
+            const text = getAllText();
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'work_' + articleId + '.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportWord() {
+            window.location.href = '/api/articles/' + articleId + '/export/word';
+        }
+
+        function exportPDF() {
+            window.location.href = '/api/articles/' + articleId + '/export/pdf';
+        }
+
+        function showScore() {
+            const panel = document.getElementById('scorePanel');
+            if (panel.style.display === 'block') {
+                panel.style.display = 'none';
+                return;
+            }
+            panel.style.display = 'block';
+            panel.innerHTML = '<div class="loading"><div class="spinner"></div>正在评分...</div>';
+            fetch('/api/articles/' + articleId + '/score')
+            .then(res => res.json())
+            .then(data => {
+                let html = '<div style="font-size:18px;font-weight:700;margin-bottom:16px;">📊 文章评分报告</div>';
+                html += '<div style="font-size:40px;font-weight:700;background:var(--accent-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:20px;">' + data.overall + ' 分</div>';
+                html += '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;">';
+                const names = { word_count: '字数', structure: '结构', paragraph: '段落', dialogue: '对话', formatting: '格式' };
+                Object.keys(data.scores).forEach(k => {
+                    html += '<div style="background:var(--bg-tertiary);padding:14px;border-radius:8px;text-align:center;">';
+                    html += '<div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;">' + (names[k] || k) + '</div>';
+                    html += '<div style="font-size:22px;font-weight:700;color:var(--accent);">' + data.scores[k] + '</div>';
+                    html += '</div>';
+                });
+                html += '</div>';
+                html += '<div style="font-size:13.5px;color:var(--text-secondary);margin-bottom:14px;">' + data.stats.total_words + ' 字 · ' + data.stats.chapter_count + ' 部分 · ' + data.stats.total_paragraphs + ' 段 · 平均每段 ' + data.stats.avg_paragraph_len + ' 字</div>';
+                html += '<div style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">优化建议</div>';
+                data.suggestions.forEach(s => {
+                    html += '<div style="font-size:13px;color:var(--text-muted);padding:3px 0;">• ' + s + '</div>';
+                });
+                panel.innerHTML = html;
+                panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            })
+            .catch(() => { panel.innerHTML = '<p style="color:var(--danger)">评分失败，请重试</p>'; });
+        }
+
+        loadArticle();
+    </script>
+</body>
+</html>

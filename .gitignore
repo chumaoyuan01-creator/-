@@ -1,0 +1,40 @@
+# 虚拟环境
+venv/
+.venv/
+
+# 环境变量（含密钥）
+.env
+
+# 数据库文件
+*.db
+*.db-journal
+*.db-wal
+
+# 日志
+*.log
+/var/
+
+# 备份
+/backups/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 备份文件
+*.bak
+*.backup
