@@ -29,6 +29,19 @@ def safe_get(data, key, default='', coerce=None):
             val = default
     return val
 
+
+from functools import wraps
+
+
+def expect_json(f):
+    """装饰器：自动解析 JSON 请求体，注入到 kwargs['data']"""
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        kwargs['data'] = request.get_json(silent=True) or {}
+        return f(*args, **kwargs)
+    return wrapper
+
+
 # Prometheus 指标
 REQUEST_COUNT = Counter(
     'flask_http_requests_total', 'Total HTTP requests',
@@ -71,6 +84,12 @@ def after_request(response):
             method=request.method,
             endpoint=endpoint
         ).observe(elapsed)
+        # 结构化请求日志
+        app.logger.info(
+            f'method={request.method} path={request.path} '
+            f'status={response.status_code} elapsed={elapsed:.4f}s '
+            f'ip={request.remote_addr}'
+        )
     return response
 
 
@@ -182,6 +201,7 @@ def api_ai_test():
 @login_required
 @limiter.limit("5 per minute")
 def api_ai_generate():
+    """AI 短篇生成（异步模式，立即返回 task_id）"""
     data = request.get_json(silent=True) or {}
     genre = safe_get(data, 'genre', '散文')
     topic = safe_get(data, 'topic', '').strip()
@@ -196,47 +216,62 @@ def api_ai_generate():
     if not topic or not keyword:
         return jsonify({'error': '主题和关键词不能为空'}), 400
 
-    try:
-        content = generate_article_ai(genre, topic, keyword, length, style, perspective, language_style, constraints, format_type)
-    except Exception as e:
-        return jsonify({'error': f'AI 生成失败: {str(e)}'}), 500
+    task_id = str(uuid.uuid4())
+    generation_tasks[task_id] = {
+        'status': 'pending',
+        'progress': 0,
+        'current_chapter': 0,
+        'total_chapters': 1,
+        'article_id': None,
+        'actual_words': 0,
+        'chapter_count': 0,
+        'error': None,
+        'cancelled': False,
+        'user_id': current_user.id if current_user.is_authenticated else None,
+    }
 
-    article = Article(
-        title=f'{topic} - {genre}（AI）',
-        genre=genre,
-        topic=topic,
-        keyword=keyword,
-        length=length,
-        word_count=len(content.replace('\n', '').replace(' ', '')),
-        user_id=current_user.id if current_user.is_authenticated else None,
-    )
-    db.session.add(article)
-    db.session.flush()
+    def _run_short_generation():
+        try:
+            generation_tasks[task_id]['status'] = 'running'
+            content = generate_article_ai(genre, topic, keyword, length, style, perspective, language_style, constraints, format_type)
+            if generation_tasks[task_id].get('cancelled'):
+                generation_tasks[task_id]['status'] = 'cancelled'
+                return
+            article = Article(
+                title=f'{topic} - {genre}（AI）',
+                genre=genre, topic=topic, keyword=keyword, length=length,
+                word_count=len(content.replace('\n', '').replace(' ', '')),
+                user_id=current_user.id if current_user.is_authenticated else None,
+            )
+            db.session.add(article)
+            db.session.flush()
+            chapter = Chapter(
+                article_id=article.id, chapter_index=1, chapter_title='全文',
+                content=content, word_count=len(content.replace('\n', '').replace(' ', '')),
+            )
+            db.session.add(chapter)
+            db.session.commit()
+            generation_tasks[task_id].update({
+                'status': 'completed', 'progress': 100,
+                'article_id': article.id, 'actual_words': article.word_count,
+                'chapter_count': 1, 'current_chapter': 1, 'total_chapters': 1,
+            })
+        except Exception as e:
+            generation_tasks[task_id]['status'] = 'failed'
+            generation_tasks[task_id]['error'] = str(e)
 
-    chapter = Chapter(
-        article_id=article.id,
-        chapter_index=1,
-        chapter_title='全文',
-        content=content,
-        word_count=len(content.replace('\n', '').replace(' ', '')),
-    )
-    db.session.add(chapter)
-    db.session.commit()
+    thread = threading.Thread(target=_run_short_generation)
+    thread.daemon = True
+    thread.start()
 
-    return jsonify({
-        'article_id': article.id,
-        'genre': genre,
-        'topic': topic,
-        'keyword': keyword,
-        'length': length,
-        'content': content,
-    })
+    return jsonify({'task_id': task_id, 'status': 'pending'})
 
 
 @app.route('/api/ai/generate/long', methods=['POST'])
 @login_required
 @limiter.limit("3 per minute")
 def api_ai_generate_long():
+    """AI 长篇生成（异步模式，立即返回 task_id）"""
     data = request.get_json(silent=True) or {}
     genre = safe_get(data, 'genre', '散文')
     topic = safe_get(data, 'topic', '').strip()
@@ -253,46 +288,54 @@ def api_ai_generate_long():
 
     target_words = min(max(target_words, 3000), 500000)
 
-    try:
-        chapters_data = generate_long_article_ai(genre, topic, keyword, target_words, style, perspective, language_style, constraints, format_type)
-    except Exception as e:
-        return jsonify({'error': f'AI 生成失败: {str(e)}'}), 500
+    task_id = str(uuid.uuid4())
+    generation_tasks[task_id] = {
+        'status': 'pending', 'progress': 0,
+        'current_chapter': 0, 'total_chapters': 0,
+        'article_id': None, 'actual_words': 0, 'chapter_count': 0,
+        'error': None, 'cancelled': False,
+        'user_id': current_user.id if current_user.is_authenticated else None,
+    }
 
-    total_words = sum(ch['word_count'] for ch in chapters_data)
-    article = Article(
-        title=f'{topic} - {genre}（AI长篇）',
-        genre=genre,
-        topic=topic,
-        keyword=keyword,
-        length='long',
-        word_count=total_words,
-        user_id=current_user.id if current_user.is_authenticated else None,
-    )
-    db.session.add(article)
-    db.session.flush()
+    def _run_long_generation():
+        try:
+            generation_tasks[task_id]['status'] = 'running'
+            chapters_data = generate_long_article_ai(genre, topic, keyword, target_words, style, perspective, language_style, constraints, format_type)
+            if generation_tasks[task_id].get('cancelled'):
+                generation_tasks[task_id]['status'] = 'cancelled'
+                return
+            total_words = sum(ch['word_count'] for ch in chapters_data)
+            article = Article(
+                title=f'{topic} - {genre}（AI长篇）',
+                genre=genre, topic=topic, keyword=keyword, length='long',
+                word_count=total_words,
+                user_id=current_user.id if current_user.is_authenticated else None,
+            )
+            db.session.add(article)
+            db.session.flush()
+            for ch_data in chapters_data:
+                chapter = Chapter(
+                    article_id=article.id, chapter_index=ch_data['chapter_index'],
+                    chapter_title=ch_data['chapter_title'],
+                    content=ch_data['content'], word_count=ch_data['word_count'],
+                )
+                db.session.add(chapter)
+            db.session.commit()
+            generation_tasks[task_id].update({
+                'status': 'completed', 'progress': 100,
+                'article_id': article.id, 'actual_words': total_words,
+                'chapter_count': len(chapters_data),
+                'current_chapter': len(chapters_data), 'total_chapters': len(chapters_data),
+            })
+        except Exception as e:
+            generation_tasks[task_id]['status'] = 'failed'
+            generation_tasks[task_id]['error'] = str(e)
 
-    for ch_data in chapters_data:
-        chapter = Chapter(
-            article_id=article.id,
-            chapter_index=ch_data['chapter_index'],
-            chapter_title=ch_data['chapter_title'],
-            content=ch_data['content'],
-            word_count=ch_data['word_count'],
-        )
-        db.session.add(chapter)
+    thread = threading.Thread(target=_run_long_generation)
+    thread.daemon = True
+    thread.start()
 
-    db.session.commit()
-
-    return jsonify({
-        'article_id': article.id,
-        'genre': genre,
-        'topic': topic,
-        'keyword': keyword,
-        'target_words': target_words,
-        'actual_words': total_words,
-        'chapter_count': len(chapters_data),
-        'chapters': chapters_data,
-    })
+    return jsonify({'task_id': task_id, 'status': 'pending'})
 
 
 # ============================================================

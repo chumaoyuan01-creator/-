@@ -7,8 +7,12 @@ from logging.handlers import TimedRotatingFileHandler
 class Config:
     """基础配置"""
     SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
-    SQLALCHEMY_DATABASE_URI = 'sqlite:////var/lib/flask-app/articles.db'
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        'DATABASE_URL',
+        'sqlite:////var/lib/flask-app/articles.db'
+    )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    PERMANENT_SESSION_LIFETIME = 604800  # 7 天
 
 
 class ProductionConfig(Config):
