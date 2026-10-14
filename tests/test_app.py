@@ -142,3 +142,103 @@ class TestParameterValidation:
         """缺少必填参数应返回 400"""
         resp = auth_client.post('/api/ai/generate', json={})
         assert resp.status_code == 400
+
+
+class TestMembershipAPI:
+    """会员与支付 API 测试"""
+
+    def test_plans_public(self, client):
+        """套餐列表无需登录即可访问"""
+        resp = client.get('/api/membership/plans')
+        assert resp.status_code == 200
+        data = json.loads(resp.data)
+        assert 'plans' in data
+        assert len(data['plans']) == 4
+
+    def test_plans_contains_all_levels(self, client):
+        """套餐列表包含所有等级"""
+        resp = client.get('/api/membership/plans')
+        data = json.loads(resp.data)
+        plans = data['plans']
+        assert 'basic_monthly' in plans
+        assert 'basic_yearly' in plans
+        assert 'gold_monthly' in plans
+        assert 'gold_yearly' in plans
+        assert plans['basic_monthly']['amount'] == 19
+        assert plans['gold_monthly']['amount'] == 49
+
+    def test_status_requires_login(self, client):
+        """会员状态需要登录"""
+        resp = client.get('/api/membership/status')
+        assert resp.status_code in (302, 401)
+
+    def test_status_logged_in(self, auth_client):
+        """已登录用户可查询会员状态"""
+        resp = auth_client.get('/api/membership/status')
+        assert resp.status_code == 200
+        data = json.loads(resp.data)
+        assert 'membership' in data
+        assert 'daily_limit' in data
+        assert data['membership']['level'] == 'free'
+
+    def test_check_generate_requires_login(self, client):
+        """生成次数检查需要登录"""
+        resp = client.get('/api/membership/check-generate')
+        assert resp.status_code in (302, 401)
+
+    def test_check_generate_logged_in(self, auth_client):
+        """已登录用户可检查生成次数"""
+        resp = auth_client.get('/api/membership/check-generate')
+        assert resp.status_code == 200
+        data = json.loads(resp.data)
+        assert 'remaining' in data
+        assert 'daily_limit' in data
+        assert 'level' in data
+
+    def test_create_order_requires_login(self, client):
+        """创建订单需要登录"""
+        resp = client.post('/api/orders/create', json={'plan': 'basic_monthly'})
+        assert resp.status_code in (302, 401)
+
+    def test_create_order_invalid_plan(self, auth_client):
+        """无效套餐应返回 400"""
+        resp = auth_client.post('/api/orders/create', json={'plan': 'invalid_plan'})
+        assert resp.status_code == 400
+
+    def test_create_order_success(self, auth_client):
+        """创建订单成功"""
+        resp = auth_client.post('/api/orders/create', json={
+            'plan': 'basic_monthly',
+            'pay_method': 'wechat'
+        })
+        assert resp.status_code == 200
+        data = json.loads(resp.data)
+        assert 'order' in data
+        assert data['order']['status'] == 'pending'
+
+    def test_orders_list_requires_login(self, client):
+        """订单列表需要登录"""
+        resp = client.get('/api/orders')
+        assert resp.status_code in (302, 401)
+
+    def test_pay_order_success(self, auth_client):
+        """模拟支付成功"""
+        # 先创建订单
+        resp = auth_client.post('/api/orders/create', json={
+            'plan': 'basic_monthly',
+            'pay_method': 'wechat'
+        })
+        data = json.loads(resp.data)
+        order_no = data['order']['order_no']
+
+        # 模拟支付
+        resp = auth_client.post(f'/api/orders/{order_no}/pay')
+        assert resp.status_code == 200
+        data = json.loads(resp.data)
+        assert data['message'] == '支付成功'
+        assert data['order']['status'] == 'paid'
+
+    def test_pay_order_not_found(self, auth_client):
+        """支付不存在的订单应返回 404"""
+        resp = auth_client.post('/api/orders/INVALID_ORDER/pay')
+        assert resp.status_code == 404

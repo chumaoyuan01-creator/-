@@ -478,21 +478,59 @@ function validateGenerateForm(topic, keyword) {
             });
         }
 
-        // 游客点击生成按钮时，检查登录状态
+        // 游客点击生成按钮时，检查登录状态和次数限制
         function handleGenerate() {
             fetch('/api/user/status')
             .then(res => res.json())
             .then(data => {
-                if (data.logged_in) {
-                    generate();
-                } else {
+                if (!data.logged_in) {
                     openAuthModal('login');
+                    return;
                 }
+                // 已登录，检查今日剩余次数
+                return fetch('/api/membership/check-generate');
+            })
+            .then(res => res && res.json())
+            .then(data => {
+                if (!data) return;
+                if (data.remaining <= 0) {
+                    showToast(`今日生成次数已用完（${data.today_count}/${data.daily_limit}），请升级会员`, 'error');
+                    document.getElementById('pricing').scrollIntoView({behavior:'smooth'});
+                    return;
+                }
+                generate();
             });
         }
 
         // 页面加载时不自动检查登录状态，避免触发任何弹窗
         // 仅在用户登录成功后调用 checkUserStatus 更新顶栏
+
+        // ============================================================
+        // 定价切换
+        // ============================================================
+
+        function switchPlan(level, period, el) {
+            const prices = {
+                basic: { monthly: 19, yearly: 199 },
+                gold: { monthly: 49, yearly: 499 }
+            };
+            const amount = prices[level][period];
+            const planKey = level + '_' + period;
+            const periodText = period === 'monthly' ? '月' : '年';
+
+            // 更新价格显示
+            document.getElementById(level + 'Price').innerHTML = '¥' + amount + '<span>/' + periodText + '</span>';
+            document.getElementById(level + 'Yearly').style.display = period === 'yearly' ? 'block' : 'none';
+
+            // 更新按钮
+            const btn = document.getElementById(level + 'Btn');
+            btn.textContent = '立即订阅 ¥' + amount + '/' + periodText;
+            btn.onclick = () => buyMembership(planKey);
+
+            // 更新切换标签
+            el.parentElement.querySelectorAll('.toggle-label').forEach(l => l.classList.remove('active'));
+            el.classList.add('active');
+        }
 
         // ============================================================
         // 会员购买流程
