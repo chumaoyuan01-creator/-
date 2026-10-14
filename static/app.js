@@ -440,17 +440,26 @@ function validateGenerateForm(topic, keyword) {
             .then(data => {
                 const userInfo = document.getElementById('userInfo');
                 const authLink = document.getElementById('authLink');
+                const generateBtn = document.getElementById('generateBtn');
                 if (data.logged_in) {
                     userInfo.textContent = '👤 ' + data.username;
                     authLink.textContent = '退出';
                     authLink.onclick = () => {
                         fetch('/api/logout', { method: 'POST' })
-                        .then(() => checkUserStatus());
+                        .then(() => location.reload());
                     };
+                    if (generateBtn) {
+                        generateBtn.onclick = () => generate();
+                        generateBtn.textContent = '✨ 开始创作';
+                    }
                 } else {
-                    userInfo.textContent = '';
-                    authLink.textContent = '登录';
+                    userInfo.textContent = '游客';
+                    authLink.textContent = '登录 / 注册';
                     authLink.onclick = () => openAuthModal('login');
+                    if (generateBtn) {
+                        generateBtn.onclick = () => openAuthModal('login');
+                        generateBtn.textContent = '🔑 登录后开始创作';
+                    }
                 }
             });
         }
