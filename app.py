@@ -3,8 +3,6 @@ import threading
 import uuid
 import io
 import time
-import logging
-from logging.handlers import TimedRotatingFileHandler
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for, send_file
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -13,9 +11,10 @@ from prometheus_client import Counter, Histogram, generate_latest, REGISTRY
 from models import db, User, Article, Chapter
 from generator import get_genres
 from ai_generator import generate_article_ai, generate_long_article_ai, test_connection, generate_outline_ai, generate_single_chapter_ai
+from config import get_config, setup_logging
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+app.config.from_object(get_config())
 
 
 def safe_get(data, key, default='', coerce=None):
@@ -40,25 +39,8 @@ REQUEST_LATENCY = Histogram(
     ['method', 'endpoint']
 )
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////var/lib/flask-app/articles.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# 应用日志配置
-log_dir = '/var/log/flask-app'
-os.makedirs(log_dir, exist_ok=True)
-file_handler = TimedRotatingFileHandler(
-    os.path.join(log_dir, 'app.log'),
-    when='midnight',
-    interval=1,
-    backupCount=30,
-    encoding='utf-8'
-)
-file_handler.setFormatter(logging.Formatter(
-    '%(asctime)s [%(levelname)s] %(message)s'
-))
-app.logger.addHandler(file_handler)
-app.logger.setLevel(logging.INFO)
-app.logger.info('Flask app started')
+# 应用日志
+setup_logging(app)
 
 # 频率限制
 limiter = Limiter(
