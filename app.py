@@ -687,7 +687,20 @@ def api_genres():
 
 @app.route('/health')
 def health():
-    return jsonify({'status': 'healthy'})
+    import time
+    db_ok = True
+    db_error = None
+    try:
+        db.session.execute(db.text('SELECT 1'))
+    except Exception as e:
+        db_ok = False
+        db_error = str(e)
+    return jsonify({
+        'status': 'healthy' if db_ok else 'degraded',
+        'database': 'ok' if db_ok else 'error',
+        'database_error': db_error,
+        'timestamp': int(time.time()),
+    }), 200 if db_ok else 503
 
 
 # ============================================================
