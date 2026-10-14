@@ -8,7 +8,7 @@
     <meta http-equiv="Expires" content="0">
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
     <title>墨韵 · AI 智能写作平台</title>
-    <link rel="stylesheet" href="/static/style.css?v=13">
+    <link rel="stylesheet" href="/static/style.css?v=15">
 </head>
 <body>
     <!-- 顶栏 -->
@@ -269,7 +269,9 @@
             <div class="pricing-card pricing-popular">
                 <div class="pricing-badge">一般会员</div>
                 <div class="pricing-price" id="basicPrice">¥19<span>/月</span></div>
-                <div class="pricing-yearly" id="basicYearly" style="display:none;">¥199/年（省 ¥29）</div>
+                <div class="pricing-yearly" id="basicYearly" style="display:none;">
+                    <span class="save-badge">省 ¥29</span> ¥199/年
+                </div>
                 <div class="pricing-toggle">
                     <span class="toggle-label active" onclick="switchPlan('basic', 'monthly', this)">月付</span>
                     <span class="toggle-label" onclick="switchPlan('basic', 'yearly', this)">年付</span>
@@ -288,7 +290,9 @@
             <div class="pricing-card">
                 <div class="pricing-badge">黄金会员</div>
                 <div class="pricing-price" id="goldPrice">¥49<span>/月</span></div>
-                <div class="pricing-yearly" id="goldYearly" style="display:none;">¥499/年（省 ¥89）</div>
+                <div class="pricing-yearly" id="goldYearly" style="display:none;">
+                    <span class="save-badge">省 ¥89</span> ¥499/年
+                </div>
                 <div class="pricing-toggle">
                     <span class="toggle-label active" onclick="switchPlan('gold', 'monthly', this)">月付</span>
                     <span class="toggle-label" onclick="switchPlan('gold', 'yearly', this)">年付</span>
@@ -371,6 +375,6 @@
         </div>
     </div>
 
-    <script src="/static/app.js?v=13"></script>
+    <script src="/static/app.js?v=15"></script>
 </body>
 </html>

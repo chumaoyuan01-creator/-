@@ -615,10 +615,21 @@ select.input-field {
 .pricing-price span { font-size: 18px; font-weight: 400; color: var(--text-tertiary); }
 
 .pricing-yearly {
-    font-size: 13px;
-    color: var(--accent-strong);
+    font-size: 14px;
+    color: var(--text-secondary);
     margin-bottom: 8px;
     font-weight: 500;
+}
+
+.save-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-right: 4px;
 }
 
 .pricing-toggle {

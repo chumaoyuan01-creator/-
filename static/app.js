@@ -128,7 +128,7 @@ function validateGenerateForm(topic, keyword) {
         function generate() {
             const topic = document.getElementById('topic').value.trim();
             const keyword = document.getElementById('keyword').value.trim();
-            if (!topic || !keyword) { alert('请填写文章主题和关键词'); return; }
+            if (!topic || !keyword) { showToast('请填写文章主题和关键词', 'error'); return; }
 
             const btn = document.getElementById('generateBtn');
             const empty = document.getElementById('workspaceEmpty');
@@ -136,10 +136,10 @@ function validateGenerateForm(topic, keyword) {
             const body = document.getElementById('resultBody');
 
             btn.disabled = true;
-            btn.textContent = '创作中...';
+            btn.textContent = '⏳ 创作中...';
             empty.style.display = 'none';
             container.style.display = 'block';
-            body.innerHTML = '<div class="loading-state"><div class="spinner"></div>正在创作中，请稍候...</div>';
+            showLoading('正在创作中，请稍候...');
 
             const isAI = true;
             const sliderVal = 0;

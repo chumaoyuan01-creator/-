@@ -218,6 +218,20 @@ def api_ai_generate():
     if not topic or not keyword:
         return jsonify({'error': '主题和关键词不能为空'}), 400
 
+    # 检查今日剩余生成次数
+    today = datetime.utcnow().date()
+    today_count = Article.query.filter(
+        Article.user_id == current_user.id,
+        db.func.date(Article.created_at) == today
+    ).count()
+    daily_limit = current_user.get_daily_limit()
+    if today_count >= daily_limit:
+        return jsonify({
+            'error': f'今日生成次数已用完（{today_count}/{daily_limit}），请升级会员',
+            'today_count': today_count,
+            'daily_limit': daily_limit,
+        }), 429
+
     task_id = str(uuid.uuid4())
     generation_tasks[task_id] = {
         'status': 'pending',

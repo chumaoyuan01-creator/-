@@ -3,298 +3,236 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>作品库 - 墨韵</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --bg-primary: #0d1117;
-            --bg-secondary: #161b22;
-            --bg-tertiary: #1c2330;
-            --border: #30363d;
-            --text-primary: #e6edf3;
-            --text-secondary: #8b949e;
-            --text-muted: #6e7681;
-            --accent: #7c8cf8;
-            --accent-glow: rgba(124, 140, 248, 0.15);
-            --accent-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --danger: #f85149;
-            --success: #3fb950;
-            --gold: #ffd866;
-            --radius: 12px;
-            --radius-sm: 8px;
-            --shadow: 0 8px 24px rgba(0,0,0,0.4);
-        }
-        body {
-            font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
-        }
-        .topbar {
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border);
-            padding: 16px 32px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        .topbar-brand {
-            font-size: 20px;
-            font-weight: 700;
-            background: var(--accent-grad);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .topbar-nav { display: flex; gap: 24px; align-items: center; }
-        .topbar-nav a { color: var(--text-secondary); text-decoration: none; font-size: 14px; transition: color 0.3s; }
-        .topbar-nav a:hover { color: var(--accent); }
-        .content { max-width: 1000px; margin: 0 auto; padding: 32px 24px 80px; }
-
-        .page-title { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
-        .page-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
-
-        .toolbar {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 24px;
-            padding: 18px 20px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-        }
-        .toolbar input, .toolbar select {
-            padding: 10px 14px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            color: var(--text-primary);
-            font-size: 14px;
-            font-family: inherit;
-        }
-        .toolbar input { flex: 1; min-width: 180px; }
-        .toolbar input:focus, .toolbar select:focus { outline: none; border-color: var(--accent); }
-        .toolbar .filter-btn {
-            padding: 10px 18px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            color: var(--text-secondary);
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            font-size: 14px;
-            font-family: inherit;
-            transition: all 0.25s;
-        }
-        .toolbar .filter-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
-
-        .work-list { display: flex; flex-direction: column; gap: 14px; }
-        .work-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 16px;
-            transition: all 0.25s;
-        }
-        .work-card:hover { border-color: var(--accent); transform: translateX(3px); }
-        .work-card.fav { border-left: 3px solid var(--gold); }
-        .work-info { flex: 1; min-width: 0; }
-        .work-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .work-title .star { color: var(--gold); }
-        .work-meta { display: flex; flex-wrap: wrap; gap: 8px; }
-        .tag {
-            font-size: 12px;
-            padding: 3px 10px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            color: var(--text-secondary);
-        }
-        .tag-accent { color: var(--accent); border-color: var(--accent); }
-        .work-actions { display: flex; gap: 8px; flex-shrink: 0; }
-        .btn {
-            padding: 7px 14px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            color: var(--text-secondary);
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.25s;
-            font-family: inherit;
-            white-space: nowrap;
-        }
-        .btn:hover { border-color: var(--accent); color: var(--accent); }
-        .btn-danger { border-color: var(--danger); color: var(--danger); }
-        .btn-danger:hover { background: var(--danger); color: #fff; }
-        .btn-star { border-color: var(--gold); color: var(--gold); }
-        .btn-star:hover { background: var(--gold); color: #222; }
-
-        .empty-state { text-align: center; padding: 80px 20px; color: var(--text-muted); }
-        .empty-state .icon { font-size: 56px; opacity: 0.3; margin-bottom: 16px; }
-        .empty-state a { color: var(--accent); text-decoration: none; }
-        .loading { text-align: center; padding: 60px; color: var(--text-muted); }
-        .loading .spinner {
-            width: 36px; height: 36px;
-            margin: 0 auto 16px;
-            border: 3px solid var(--border);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <title>创作历史 · 墨韵</title>
+    <link rel="stylesheet" href="/static/style.css?v=15">
 </head>
 <body>
-    <div class="topbar">
-        <div class="topbar-brand">墨韵</div>
-        <div class="topbar-nav">
-            <a href="/">✍️ 创作</a>
-            <a href="/history">📚 作品库</a>
+    <header class="topbar">
+        <div class="topbar-brand">
+            <span class="brand-icon">✒️</span>
+            墨韵
+            <span class="brand-sub">AI 写作</span>
+        </div>
+        <nav class="topbar-nav">
+            <a href="/">创作工作台</a>
+            <a href="/history" class="active">创作历史</a>
+            <span class="topbar-user" id="userInfo"></span>
+            <a href="javascript:void(0)" id="authLink" class="btn btn-sm btn-primary" onclick="openAuthModal('login')">登录 / 注册</a>
+        </nav>
+    </header>
+
+    <div class="workspace" style="max-width:1100px;margin:0 auto;padding:32px;">
+        <div class="result-header">
+            <h2 style="font-size:24px;font-weight:700;">📜 创作历史</h2>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <input type="text" class="input-field" id="searchInput" placeholder="搜索文章..." style="width:240px;">
+                <select class="input-field" id="genreFilter" style="width:140px;">
+                    <option value="">全部体裁</option>
+                </select>
+                <button class="btn btn-sm" id="favFilter" onclick="toggleFavFilter()" style="white-space:nowrap;">⭐ 收藏</button>
+            </div>
+        </div>
+
+        <div id="articleList" style="display:flex;flex-direction:column;gap:12px;margin-top:20px;"></div>
+
+        <div id="emptyState" class="workspace-empty" style="display:none;">
+            <div class="icon">📭</div>
+            <div class="text">暂无作品</div>
+            <div class="hint">去创作工作台生成你的第一篇文章吧</div>
+        </div>
+
+        <div id="loadingState" class="loading-state" style="display:none;">
+            <div class="spinner"></div>
+            <p style="margin-top:12px;color:var(--text-tertiary);">加载中...</p>
         </div>
     </div>
-    <div class="content">
-        <div class="page-title">📚 作品库</div>
-        <div class="page-sub" id="pageSub">您的全部创作</div>
 
-        <div class="toolbar">
-            <input type="text" id="searchInput" placeholder="搜索标题、主题或关键词..." oninput="debouncedLoad()">
-            <select id="genreSelect" onchange="loadArticles()">
-                <option value="">全部题材</option>
-            </select>
-            <button class="filter-btn" id="favBtn" onclick="toggleFavFilter()">⭐ 仅看收藏</button>
-        </div>
-
-        <div class="work-list" id="workList">
-            <div class="loading"><div class="spinner"></div>加载中...</div>
+    <div class="modal-overlay" id="authModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeAuthModal()">✕</button>
+            <div class="modal-icon">✒️</div>
+            <h2 id="authTitle">欢迎回来</h2>
+            <p class="modal-subtitle" id="authSubtitle">登录你的账号，继续创作之旅</p>
+            <div class="form-group">
+                <label>用户名</label>
+                <input type="text" class="input-field" id="authUsername" placeholder="请输入用户名（2-20个字符）">
+            </div>
+            <div class="form-group">
+                <label>密码</label>
+                <input type="password" class="input-field" id="authPassword" placeholder="请输入密码（至少6位）">
+            </div>
+            <div class="error-msg" id="authError"></div>
+            <button class="modal-btn" id="authSubmit" onclick="submitAuth()">登录</button>
+            <div class="switch-text">
+                <span id="switchText">还没有账号？</span>
+                <a id="switchLink" onclick="openAuthModal('register')">立即注册</a>
+            </div>
+            <div class="modal-footer">🔒 安全加密传输 · 你的数据只属于你</div>
         </div>
     </div>
+
     <script>
-        let favOnly = false;
-        let debounceTimer = null;
+        let authMode = 'login';
+        let favFilterOn = false;
 
-        function esc(s) {
-            return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        function openAuthModal(mode) {
+            authMode = mode;
+            document.getElementById('authModal').classList.add('show');
+            document.getElementById('authTitle').textContent = mode === 'login' ? '欢迎回来' : '创建账号';
+            document.getElementById('authSubtitle').textContent = mode === 'login' ? '登录你的账号，继续创作之旅' : '注册墨韵账号，开启 AI 创作之旅';
+            document.getElementById('authSubmit').textContent = mode === 'login' ? '登录' : '注册';
+            document.getElementById('switchText').textContent = mode === 'login' ? '还没有账号？' : '已有账号？';
+            document.getElementById('switchLink').textContent = mode === 'login' ? '立即注册' : '去登录';
+            document.getElementById('authError').classList.remove('show');
+            history.pushState({ modalOpen: true }, '');
         }
 
-        function debouncedLoad() {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(loadArticles, 300);
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.remove('show');
+            if (history.state && history.state.modalOpen) history.back();
+        }
+
+        window.addEventListener('popstate', function(e) {
+            if (e.state && e.state.modalOpen) document.getElementById('authModal').classList.remove('show');
+        });
+
+        document.addEventListener('click', function(e) {
+            if (e.target.id === 'authModal') closeAuthModal();
+        });
+
+        function submitAuth() {
+            const username = document.getElementById('authUsername').value.trim();
+            const password = document.getElementById('authPassword').value.trim();
+            const errorEl = document.getElementById('authError');
+            if (!username || !password) { errorEl.textContent = '请填写用户名和密码'; errorEl.classList.add('show'); return; }
+            fetch('/api/' + authMode, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            }).then(res => res.json()).then(data => {
+                if (data.error) { errorEl.textContent = data.error; errorEl.classList.add('show'); }
+                else { document.getElementById('authModal').classList.remove('show'); checkUserStatus(); loadArticles(); }
+            }).catch(() => { errorEl.textContent = '请求失败，请重试'; errorEl.classList.add('show'); });
+        }
+
+        function checkUserStatus() {
+            fetch('/api/user/status').then(res => res.json()).then(data => {
+                const ui = document.getElementById('userInfo');
+                const al = document.getElementById('authLink');
+                if (data.logged_in) {
+                    ui.textContent = '👤 ' + data.username;
+                    al.textContent = '退出';
+                    al.onclick = () => { fetch('/api/logout', { method: 'POST' }).then(() => location.reload()); };
+                }
+            });
         }
 
         function toggleFavFilter() {
-            favOnly = !favOnly;
-            document.getElementById('favBtn').classList.toggle('active', favOnly);
+            favFilterOn = !favFilterOn;
+            document.getElementById('favFilter').style.background = favFilterOn ? 'var(--accent-soft)' : '';
+            document.getElementById('favFilter').style.color = favFilterOn ? 'var(--accent-strong)' : '';
             loadArticles();
-        }
-
-        function loadGenres() {
-            fetch('/api/genres')
-            .then(res => res.json())
-            .then(data => {
-                const sel = document.getElementById('genreSelect');
-                (data.genres || []).forEach(g => {
-                    const opt = document.createElement('option');
-                    opt.value = g;
-                    opt.textContent = g;
-                    sel.appendChild(opt);
-                });
-            });
         }
 
         function loadArticles() {
             const q = document.getElementById('searchInput').value.trim();
-            const genre = document.getElementById('genreSelect').value;
+            const genre = document.getElementById('genreFilter').value;
+            const fav = favFilterOn ? '1' : '';
             const params = new URLSearchParams();
             if (q) params.set('q', q);
             if (genre) params.set('genre', genre);
-            if (favOnly) params.set('fav', '1');
+            if (fav) params.set('fav', fav);
 
-            const list = document.getElementById('workList');
-            list.innerHTML = '<div class="loading"><div class="spinner"></div>加载中...</div>';
+            document.getElementById('loadingState').style.display = 'block';
+            document.getElementById('articleList').innerHTML = '';
+            document.getElementById('emptyState').style.display = 'none';
 
             fetch('/api/articles?' + params.toString())
             .then(res => res.json())
             .then(data => {
-                const works = data.articles || [];
-                const sub = document.getElementById('pageSub');
-                if (sub) sub.textContent = '共 ' + works.length + ' 篇作品';
-                if (works.length === 0) {
-                    list.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>没有找到作品</p><p style="margin-top:10px;"><a href="/">去创作一篇 ✨</a></p></div>';
+                document.getElementById('loadingState').style.display = 'none';
+                if (!data.articles || data.articles.length === 0) {
+                    document.getElementById('emptyState').style.display = 'flex';
                     return;
                 }
-                let html = '';
-                works.forEach(a => {
-                    html += '<div class="work-card' + (a.is_favorite ? ' fav' : '') + '">';
-                    html += '<div class="work-info">';
-                    html += '<div class="work-title">' + (a.is_favorite ? '<span class="star">★</span>' : '') + esc(a.title) + '</div>';
-                    html += '<div class="work-meta">';
-                    html += '<span class="tag tag-accent">' + esc(a.genre) + '</span>';
-                    html += '<span class="tag">主题 · ' + esc(a.topic) + '</span>';
-                    html += '<span class="tag">' + a.chapter_count + ' 部分</span>';
-                    html += '<span class="tag">' + a.word_count + ' 字</span>';
-                    html += '<span class="tag">' + esc(a.created_at) + '</span>';
-                    html += '</div></div>';
-                    html += '<div class="work-actions">';
-                    html += '<button class="btn" onclick="location.href=\'/article/' + a.id + '\'">阅读</button>';
-                    html += '<button class="btn" onclick="renameWork(' + a.id + ')">重命名</button>';
-                    html += '<button class="btn btn-star" onclick="toggleFav(' + a.id + ')">' + (a.is_favorite ? '取消收藏' : '收藏') + '</button>';
-                    html += '<button class="btn btn-danger" onclick="deleteWork(' + a.id + ')">删除</button>';
-                    html += '</div></div>';
+                const list = document.getElementById('articleList');
+                data.articles.forEach(a => {
+                    const card = document.createElement('div');
+                    card.style.cssText = 'background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:20px;display:flex;justify-content:space-between;align-items:center;transition:all var(--transition);';
+                    card.onmouseenter = () => { card.style.borderColor = 'var(--border-strong)'; card.style.boxShadow = 'var(--shadow-sm)'; };
+                    card.onmouseleave = () => { card.style.borderColor = 'var(--border-default)'; card.style.boxShadow = 'none'; };
+                    card.innerHTML = `
+                        <div style="flex:1;cursor:pointer;" onclick="location.href='/article/${a.id}'">
+                            <h4 style="font-size:16px;font-weight:600;margin-bottom:6px;">${escapeHtml(a.title)}</h4>
+                            <div style="font-size:12px;color:var(--text-tertiary);display:flex;gap:12px;">
+                                <span>📂 ${escapeHtml(a.genre)}</span>
+                                <span>📝 ${a.word_count || 0} 字</span>
+                                <span>📖 ${a.chapter_count || 1} 章</span>
+                                <span>🕐 ${a.created_at || ''}</span>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:8px;align-items:center;">
+                            <span style="cursor:pointer;font-size:18px;" onclick="event.stopPropagation();toggleFav(${a.id})">${a.is_favorite ? '⭐' : '☆'}</span>
+                            <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation();renameArticle(${a.id}, '${escapeHtml(a.title)}')">✏️</button>
+                            <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation();deleteArticle(${a.id})" style="color:var(--danger);">🗑️</button>
+                        </div>
+                    `;
+                    list.appendChild(card);
                 });
-                list.innerHTML = html;
             })
             .catch(() => {
-                list.innerHTML = '<div class="loading">加载失败，请刷新重试</div>';
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('emptyState').style.display = 'flex';
             });
         }
 
-        function renameWork(id) {
-            const current = prompt('请输入新的标题：');
-            if (current === null) return;
-            const title = current.trim();
-            if (!title) { alert('标题不能为空'); return; }
-            fetch('/api/articles/' + id + '/rename', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: title })
-            })
-            .then(res => res.json())
-            .then(() => loadArticles())
-            .catch(() => alert('重命名失败，请重试'));
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         function toggleFav(id) {
-            fetch('/api/articles/' + id + '/favorite', { method: 'POST' })
-            .then(res => res.json())
-            .then(() => loadArticles())
-            .catch(() => alert('操作失败，请重试'));
+            fetch('/api/articles/' + id + '/favorite', { method: 'POST' }).then(() => loadArticles());
         }
 
-        function deleteWork(id) {
-            if (!confirm('确定删除这篇作品？删除后无法恢复。')) return;
-            fetch('/api/articles/' + id, { method: 'DELETE' })
-            .then(res => res.json())
-            .then(() => loadArticles());
+        function renameArticle(id, oldTitle) {
+            const newTitle = prompt('请输入新标题：', oldTitle);
+            if (newTitle && newTitle.trim()) {
+                fetch('/api/articles/' + id + '/rename', {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title: newTitle.trim() })
+                }).then(() => loadArticles());
+            }
         }
 
-        loadGenres();
+        function deleteArticle(id) {
+            if (confirm('确定要删除这篇文章吗？此操作不可恢复。')) {
+                fetch('/api/articles/' + id, { method: 'DELETE' }).then(() => loadArticles());
+            }
+        }
+
+        // 加载体裁列表
+        fetch('/api/genres').then(res => res.json()).then(data => {
+            const sel = document.getElementById('genreFilter');
+            (data.genres || []).forEach(g => {
+                const opt = document.createElement('option');
+                opt.value = g;
+                opt.textContent = g;
+                sel.appendChild(opt);
+            });
+        });
+
+        // 搜索防抖
+        let searchTimer;
+        document.getElementById('searchInput').addEventListener('input', function() {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(loadArticles, 300);
+        });
+        document.getElementById('genreFilter').addEventListener('change', loadArticles);
+
+        checkUserStatus();
         loadArticles();
     </script>
 </body>

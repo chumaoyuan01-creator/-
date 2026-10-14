@@ -32,16 +32,27 @@ def safe_get(data, key, default='', coerce=None):
 @membership_bp.route('/api/membership/status')
 @login_required
 def api_membership_status():
-    """查询当前用户会员状态"""
+    """查询当前用户会员状态（含到期提醒）"""
     membership = Membership.query.filter_by(user_id=current_user.id).first()
     if membership:
+        days = membership.days_remaining()
+        is_expiring = days is not None and days <= 7
         return jsonify({
             'membership': membership.to_dict(),
             'daily_limit': current_user.get_daily_limit(),
+            'reminder': {
+                'is_expiring': is_expiring,
+                'days_remaining': days,
+                'should_renew': is_expiring,
+                'message': f'您的会员还有 {days} 天到期，建议续费' if is_expiring and days > 0 else (
+                    '您的会员已到期，请续费' if days == 0 else None
+                ),
+            },
         })
     return jsonify({
         'membership': {'level': 'free', 'is_active': True, 'days_remaining': None, 'expire_date': None, 'auto_renew': False},
         'daily_limit': 3,
+        'reminder': None,
     })
 
 
