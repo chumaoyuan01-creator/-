@@ -3,163 +3,366 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-    <title>墨韵 · 文章创作工作台</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>墨韵 · AI 智能写作平台</title>
+    <link rel="stylesheet" href="/static/style.css?v=12">
 </head>
 <body>
-    <div class="topbar">
-        <div class="topbar-brand">墨韵 <span>· 文章创作工作台</span></div>
-        <div class="topbar-nav">
-            <a href="/history">📜 创作历史</a>
+    <!-- 顶栏 -->
+    <header class="topbar">
+        <div class="topbar-brand">
+            <span class="brand-icon">✒️</span>
+            墨韵
+            <span class="brand-sub">AI 写作</span>
+        </div>
+        <nav class="topbar-nav">
+            <a href="#features">功能</a>
+            <a href="#pricing">定价</a>
+            <a href="/history">创作历史</a>
             <span class="topbar-user" id="userInfo"></span>
-            <a href="javascript:void(0)" id="authLink">登录 / 注册</a>
+            <a href="javascript:void(0)" id="authLink" class="btn btn-sm btn-primary" onclick="openAuthModal('login')">登录 / 注册</a>
+        </nav>
+    </header>
+
+    <!-- Hero 区域 -->
+    <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-content">
+            <div class="hero-badge">🎉 AI 驱动的内容创作平台</div>
+            <h1 class="hero-title">
+                让 AI 为你<br>
+                <span class="hero-highlight">书写无限可能</span>
+            </h1>
+            <p class="hero-desc">
+                从散文到小说，从短篇到巨著。选择体裁、输入主题，<br>
+                墨韵 AI 即刻为你生成专业级文章。
+            </p>
+            <div class="hero-actions">
+                <button class="btn btn-lg btn-primary" onclick="scrollToCreate()">
+                    ✨ 开始创作
+                </button>
+                <button class="btn btn-lg btn-ghost" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">
+                    了解更多 ↓
+                </button>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-value">11+</span>
+                    <span class="stat-label">文体类型</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">7</span>
+                    <span class="stat-label">写作风格</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">500~</span>
+                    <span class="stat-label">字数范围</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">∞</span>
+                    <span class="stat-label">创作可能</span>
+                </div>
+            </div>
         </div>
-    </div>
+    </section>
 
-    <div class="main-layout">
-        <div class="config-panel">
-            <div class="config-group">
-                <div class="config-label">作品体裁</div>
-                <div class="method-cards">
-                    <div class="method-card active" onclick="switchCategory('article', this)">
-                        <div class="icon">📄</div>
-                        <div class="label">文章</div>
-                        <div class="desc">论述 · 分节</div>
-                    </div>
-                    <div class="method-card" onclick="switchCategory('novel', this)">
-                        <div class="icon">📚</div>
-                        <div class="label">小说</div>
-                        <div class="desc">叙事 · 分章</div>
-                    </div>
-                </div>
+    <!-- 功能展示 -->
+    <section class="features" id="features">
+        <div class="section-header">
+            <h2>强大的创作引擎</h2>
+            <p>一站式 AI 写作解决方案，满足各种创作需求</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🎨</div>
+                <h3>11 种文体类型</h3>
+                <p>散文、小说、武侠、言情、科幻、悬疑……覆盖主流文学体裁，随心选择创作方向。</p>
             </div>
-
-            <div class="config-group">
-                <div class="config-label">文体类型</div>
-                <div class="genre-grid" id="genreGrid">
-                    <div class="genre-card active" data-value="散文"><span class="emoji">🍂</span>散文</div>
-                    <div class="genre-card" data-value="短篇故事"><span class="emoji">📖</span>短篇故事</div>
-                    <div class="genre-card" data-value="武侠片段"><span class="emoji">⚔️</span>武侠片段</div>
-                    <div class="genre-card" data-value="言情片段"><span class="emoji">💕</span>言情片段</div>
-                    <div class="genre-card" data-value="科幻小品"><span class="emoji">🚀</span>科幻小品</div>
-                    <div class="genre-card" data-value="悬疑推理"><span class="emoji">🔍</span>悬疑推理</div>
-                    <div class="genre-card" data-value="历史传奇"><span class="emoji">🏛️</span>历史传奇</div>
-                    <div class="genre-card" data-value="都市生活"><span class="emoji">🏙️</span>都市生活</div>
-                    <div class="genre-card" data-value="奇幻冒险"><span class="emoji">🐉</span>奇幻冒险</div>
-                    <div class="genre-card" data-value="玄幻修真"><span class="emoji">⚡</span>玄幻修真</div>
-                    <div class="genre-card" data-value="军事纪实"><span class="emoji">🎖️</span>军事纪实</div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>AI 智能生成</h3>
+                <p>基于 DeepSeek 大模型，输入主题和关键词，秒级生成高质量文章内容。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📝</div>
+                <h3>7 种写作风格</h3>
+                <p>抒情、冷静、幽默、犀利、温润、苍凉、明快——精准控制文风语调。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📚</div>
+                <h3>长篇分章创作</h3>
+                <p>支持 500 字短篇到 200 万字巨著，自动分章、大纲规划、逐节生成。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📄</div>
+                <h3>多格式导出</h3>
+                <p>支持 Word 文档和 PDF 格式导出，一键下载，随时分享你的作品。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3>安全可靠</h3>
+                <p>数据加密存储，每日自动备份，你的创作成果安全无忧。</p>
             </div>
         </div>
+    </section>
 
-            <div class="config-group">
-                <div class="config-label">文章主题</div>
-                <input type="text" class="input-field" id="topic" placeholder="例如：秋天、故乡、青春、星空..." value="秋天">
-            </div>
-
-            <div class="config-group">
-                <div class="config-label">关键词</div>
-                <input type="text" class="input-field" id="keyword" placeholder="例如：银杏、老街、月光、飞船..." value="银杏">
-            </div>
-
-            <div class="config-group">
-                <div class="config-label">作品篇幅</div>
-                <div class="genre-grid" id="quickWords" style="margin-bottom:8px;">
-                    <div class="word-card" data-words="2000" onclick="selectQuickWords(2000, this)">2000字</div>
-                    <div class="word-card" data-words="5000" onclick="selectQuickWords(5000, this)">5000字</div>
-                    <div class="word-card" data-words="10000" onclick="selectQuickWords(10000, this)">1万字</div>
-                    <div class="word-card" data-words="50000" onclick="selectQuickWords(50000, this)">5万字</div>
-                    <div class="word-card" data-words="100000" onclick="selectQuickWords(100000, this)">10万字</div>
-                    <div class="word-card" data-words="500000" onclick="selectQuickWords(500000, this)">50万字</div>
-                </div>
-                <input type="number" class="input-field" id="customWords" placeholder="或输入自定义字数（500-2000000）" value="2000" min="500" max="2000000" style="margin-top:8px;">
-            </div>
-
-            <div class="collapse-panel" id="aiStylePanel">
-                <div class="collapse-header" onclick="toggleCollapse('styleBody', 'styleArrow')">
-                    <span>🎨 写作风格设置</span>
-                    <span id="styleArrow">▲</span>
-                </div>
-                <div class="collapse-body show" id="styleBody">
-                    <div class="config-group">
-                        <div class="config-label">文风</div>
-                        <select class="input-field" id="writingStyle">
-                            <option value="抒情">抒情 · 情感饱满，以情动人</option>
-                            <option value="冷静">冷静 · 克制客观，不发议论</option>
-                            <option value="幽默">幽默 · 诙谐风趣，举重若轻</option>
-                            <option value="犀利">犀利 · 观点尖锐，一针见血</option>
-                            <option value="温润">温润 · 平和从容，娓娓道来</option>
-                            <option value="苍凉">苍凉 · 沧桑厚重，带时代悲悯</option>
-                            <option value="明快">明快 · 轻快明亮，节奏干净</option>
-                        </select>
-                    </div>
-                    <div class="config-group" id="perspectiveGroup">
-                        <div class="config-label">叙事视角 <span style="font-size:11px;color:var(--text-muted);font-weight:400;">（小说专属）</span></div>
-                        <select class="input-field" id="narrativePerspective">
-                            <option value="第三人称">第三人称</option>
-                            <option value="第一人称">第一人称</option>
-                            <option value="全知视角">全知视角</option>
-                    </select>
-                </div>
+    <!-- 创作工作台 -->
+    <section class="create-section" id="create">
+        <div class="section-header">
+            <h2>开始创作</h2>
+            <p>配置参数，让 AI 为你书写精彩</p>
+        </div>
+        <div class="create-layout">
+            <!-- 左侧配置 -->
+            <div class="create-sidebar">
                 <div class="config-group">
-                    <div class="config-label">语言风格</div>
-                    <select class="input-field" id="languageStyle">
-                        <option value="现代白话">现代白话 · 干净流畅，当代通行</option>
-                        <option value="古典文言">古典文言 · 凝练古雅，文言韵味</option>
-                        <option value="市井口语">市井口语 · 生活口语，接地气</option>
-                        <option value="书面雅正">书面雅正 · 庄重考究，正式得体</option>
-                        <option value="网络语感">网络语感 · 轻松活泼，当代网感</option>
-                    </select>
-            </div>
-            <div class="config-group">
-                <div class="config-label">自定义约束</div>
-                <textarea class="input-field" id="constraints" placeholder="如：必须包含对话、不超过3个人物、结尾留悬念..."></textarea>
-            </div>
-        </div>
-        </div>
-
-            <button class="generate-btn" id="generateBtn" onclick="generate()">✨ 开始创作</button>
-        </div>
-
-        <div class="workspace" id="workspace">
-            <div class="workspace-empty" id="workspaceEmpty">
-                <div class="icon">✍️</div>
-                <div class="text">创作工作台</div>
-                <div class="hint">在左侧配置创作参数，点击「开始创作」生成文章</div>
-            </div>
-            <div class="result-container" id="resultContainer" style="display:none;">
-                <div class="result-header">
-                    <div class="result-tags" id="resultTags"></div>
-                    <div class="result-stats" id="resultStats"></div>
+                    <div class="config-label">📂 作品类型</div>
+                    <div class="method-cards">
+                        <div class="method-card active" onclick="switchCategory('article', this)">
+                            <div class="icon">📄</div>
+                            <div class="label">文章</div>
+                            <div class="desc">论述 · 分节</div>
+                        </div>
+                        <div class="method-card" onclick="switchCategory('novel', this)">
+                            <div class="icon">📚</div>
+                            <div class="label">小说</div>
+                            <div class="desc">叙事 · 分章</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="result-body" id="resultBody"></div>
-                <div class="action-bar">
-                    <button class="action-btn" onclick="copyResult()">📋 复制全文</button>
-                    <button class="action-btn" onclick="downloadResult()">💾 下载文本</button>
-                    <button class="action-btn" onclick="location.href='/history'">📜 创作历史</button>
+
+                <div class="config-group">
+                    <div class="config-label">🎭 文体类型</div>
+                    <div class="genre-grid" id="genreGrid">
+                        <div class="genre-card active" data-value="散文"><span class="emoji">🍂</span>散文</div>
+                        <div class="genre-card" data-value="短篇故事"><span class="emoji">📖</span>短篇故事</div>
+                        <div class="genre-card" data-value="武侠片段"><span class="emoji">⚔️</span>武侠片段</div>
+                        <div class="genre-card" data-value="言情片段"><span class="emoji">💕</span>言情片段</div>
+                        <div class="genre-card" data-value="科幻小品"><span class="emoji">🚀</span>科幻小品</div>
+                        <div class="genre-card" data-value="悬疑推理"><span class="emoji">🔍</span>悬疑推理</div>
+                        <div class="genre-card" data-value="历史传奇"><span class="emoji">🏛️</span>历史传奇</div>
+                        <div class="genre-card" data-value="都市生活"><span class="emoji">🏙️</span>都市生活</div>
+                        <div class="genre-card" data-value="奇幻冒险"><span class="emoji">🐉</span>奇幻冒险</div>
+                        <div class="genre-card" data-value="玄幻修真"><span class="emoji">⚡</span>玄幻修真</div>
+                        <div class="genre-card" data-value="军事纪实"><span class="emoji">🎖️</span>军事纪实</div>
+                    </div>
+                </div>
+
+                <div class="config-group">
+                    <div class="config-label">💡 文章主题</div>
+                    <input type="text" class="input-field" id="topic" placeholder="例如：秋天、故乡、青春、星空..." value="秋天">
+                </div>
+
+                <div class="config-group">
+                    <div class="config-label">🔑 关键词</div>
+                    <input type="text" class="input-field" id="keyword" placeholder="例如：银杏、老街、月光、飞船..." value="银杏">
+                </div>
+
+                <div class="config-group">
+                    <div class="config-label">📏 作品篇幅</div>
+                    <div class="genre-grid" id="quickWords" style="margin-bottom:8px;">
+                        <div class="word-card" data-words="2000" onclick="selectQuickWords(2000, this)">2000字</div>
+                        <div class="word-card" data-words="5000" onclick="selectQuickWords(5000, this)">5000字</div>
+                        <div class="word-card" data-words="10000" onclick="selectQuickWords(10000, this)">1万字</div>
+                        <div class="word-card" data-words="50000" onclick="selectQuickWords(50000, this)">5万字</div>
+                        <div class="word-card" data-words="100000" onclick="selectQuickWords(100000, this)">10万字</div>
+                        <div class="word-card" data-words="500000" onclick="selectQuickWords(500000, this)">50万字</div>
+                    </div>
+                    <input type="number" class="input-field" id="customWords" placeholder="自定义字数（500-2000000）" value="2000" min="500" max="2000000" style="margin-top:8px;">
+                </div>
+
+                <div class="collapse-panel" id="aiStylePanel">
+                    <div class="collapse-header" onclick="toggleCollapse('styleBody', 'styleArrow')">
+                        <span>🎨 写作风格设置</span>
+                        <span id="styleArrow">▲</span>
+                    </div>
+                    <div class="collapse-body show" id="styleBody">
+                        <div style="margin-bottom:12px;">
+                            <div class="config-label" style="font-size:12px;">文风</div>
+                            <select class="input-field" id="writingStyle">
+                                <option value="抒情">抒情 · 情感饱满，以情动人</option>
+                                <option value="冷静">冷静 · 克制客观，不发议论</option>
+                                <option value="幽默">幽默 · 诙谐风趣，举重若轻</option>
+                                <option value="犀利">犀利 · 观点尖锐，一针见血</option>
+                                <option value="温润">温润 · 平和从容，娓娓道来</option>
+                                <option value="苍凉">苍凉 · 沧桑厚重，带时代悲悯</option>
+                                <option value="明快">明快 · 轻快明亮，节奏干净</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom:12px;">
+                            <div class="config-label" style="font-size:12px;">叙事视角</div>
+                            <select class="input-field" id="narrativePerspective">
+                                <option value="第三人称">第三人称</option>
+                                <option value="第一人称">第一人称</option>
+                                <option value="全知视角">全知视角</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom:12px;">
+                            <div class="config-label" style="font-size:12px;">语言风格</div>
+                            <select class="input-field" id="languageStyle">
+                                <option value="现代白话">现代白话 · 干净流畅</option>
+                                <option value="古典文言">古典文言 · 凝练古雅</option>
+                                <option value="市井口语">市井口语 · 生活口语</option>
+                                <option value="书面雅正">书面雅正 · 庄重考究</option>
+                                <option value="网络语感">网络语感 · 轻松活泼</option>
+                            </select>
+                        </div>
+                        <div>
+                            <div class="config-label" style="font-size:12px;">自定义约束</div>
+                            <textarea class="input-field" id="constraints" placeholder="如：必须包含对话、不超过3个人物、结尾留悬念..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="generate-btn" id="generateBtn" onclick="handleGenerate()">
+                    ✨ 开始创作
+                </button>
+            </div>
+
+            <!-- 右侧结果 -->
+            <div class="create-result">
+                <div class="workspace-empty" id="workspaceEmpty">
+                    <div class="icon">✍️</div>
+                    <div class="text">创作工作台</div>
+                    <div class="hint">在左侧配置创作参数，点击「开始创作」生成文章</div>
+                </div>
+                <div class="result-container" id="resultContainer" style="display:none;">
+                    <div class="result-header">
+                        <div class="result-tags" id="resultTags"></div>
+                        <div class="result-stats" id="resultStats"></div>
+                    </div>
+                    <div class="result-body" id="resultBody"></div>
+                    <div class="action-bar">
+                        <button class="action-btn" onclick="copyResult()">📋 复制全文</button>
+                        <button class="action-btn" onclick="downloadResult()">💾 下载文本</button>
+                        <button class="action-btn" onclick="location.href='/history'">📜 创作历史</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
+    <!-- 定价区域 -->
+    <section class="pricing" id="pricing">
+        <div class="section-header">
+            <h2>选择适合你的方案</h2>
+            <p>从免费开始，按需升级</p>
+        </div>
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <div class="pricing-badge">免费</div>
+                <div class="pricing-price">¥0<span>/月</span></div>
+                <ul class="pricing-features">
+                    <li>✅ 每日 3 次 AI 生成</li>
+                    <li>✅ 11 种文体类型</li>
+                    <li>✅ 7 种写作风格</li>
+                    <li>✅ 最多 2000 字/篇</li>
+                    <li>✅ 在线预览</li>
+                    <li>❌ 多格式导出</li>
+                    <li>❌ 长篇创作</li>
+                </ul>
+                <button class="btn btn-secondary" style="width:100%;" onclick="openAuthModal('register')">免费开始</button>
+            </div>
+            <div class="pricing-card pricing-popular">
+                <div class="pricing-badge">一般会员</div>
+                <div class="pricing-price">¥19<span>/月</span></div>
+                <div class="pricing-yearly">¥199/年（省 ¥29）</div>
+                <ul class="pricing-features">
+                    <li>✅ 每日 30 次 AI 生成</li>
+                    <li>✅ 11 种文体类型</li>
+                    <li>✅ 7 种写作风格</li>
+                    <li>✅ 最多 10000 字/篇</li>
+                    <li>✅ Word/PDF 导出</li>
+                    <li>✅ 长篇创作（10万字）</li>
+                    <li>✅ 优先队列</li>
+                </ul>
+                <button class="btn btn-primary" style="width:100%;" onclick="buyMembership('basic_monthly')">立即订阅</button>
+            </div>
+            <div class="pricing-card">
+                <div class="pricing-badge">黄金会员</div>
+                <div class="pricing-price">¥49<span>/月</span></div>
+                <div class="pricing-yearly">¥499/年（省 ¥89）</div>
+                <ul class="pricing-features">
+                    <li>✅ 无限次 AI 生成</li>
+                    <li>✅ 11 种文体类型</li>
+                    <li>✅ 7 种写作风格</li>
+                    <li>✅ 最多 200 万字/篇</li>
+                    <li>✅ Word/PDF 导出</li>
+                    <li>✅ 长篇巨著支持</li>
+                    <li>✅ 专属客服</li>
+                </ul>
+                <button class="btn btn-primary" style="width:100%;" onclick="buyMembership('gold_monthly')">立即订阅</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span class="brand-icon">✒️</span> 墨韵 AI 写作
+            </div>
+            <div class="footer-links">
+                <a href="#features">功能</a>
+                <a href="#pricing">定价</a>
+                <a href="#">关于</a>
+                <a href="#">隐私政策</a>
+            </div>
+            <div class="footer-copy">© 2026 墨韵 · AI 智能写作平台</div>
+        </div>
+    </footer>
+
+    <!-- 登录弹窗 -->
     <div class="modal-overlay" id="authModal">
         <div class="modal">
-            <h2 id="authTitle">登录</h2>
-            <div class="config-group">
-                <input type="text" class="input-field" id="authUsername" placeholder="用户名">
+            <button class="modal-close" onclick="closeAuthModal()">✕</button>
+            <div class="modal-icon">✒️</div>
+            <h2 id="authTitle">欢迎回来</h2>
+            <p class="modal-subtitle" id="authSubtitle">登录你的账号，继续创作之旅</p>
+
+            <div class="form-group">
+                <label>用户名</label>
+                <input type="text" class="input-field" id="authUsername" placeholder="请输入用户名（2-20个字符）">
             </div>
-            <div class="config-group">
-                <input type="password" class="input-field" id="authPassword" placeholder="密码（至少6位）">
+
+            <div class="form-group">
+                <label>密码</label>
+                <input type="password" class="input-field" id="authPassword" placeholder="请输入密码（至少6位）">
             </div>
+
+            <!-- 注册时显示手机号字段 -->
+            <div class="form-group" id="phoneGroup" style="display:none;">
+                <label>手机号</label>
+                <div class="phone-row">
+                    <input type="tel" class="input-field" id="authPhone" placeholder="请输入手机号" style="flex:1;">
+                    <button class="btn btn-sm btn-secondary" id="sendCodeBtn" onclick="sendVerifyCode()" style="white-space:nowrap;">获取验证码</button>
+                </div>
+            </div>
+
+            <!-- 注册时显示验证码字段 -->
+            <div class="form-group" id="codeGroup" style="display:none;">
+                <label>验证码</label>
+                <input type="text" class="input-field" id="authCode" placeholder="请输入短信验证码">
+            </div>
+
             <div class="error-msg" id="authError"></div>
+
             <button class="modal-btn" id="authSubmit" onclick="submitAuth()">登录</button>
+
             <div class="switch-text">
                 <span id="switchText">还没有账号？</span>
-                <a id="switchLink" onclick="openAuthModal('register')">注册</a>
+                <a id="switchLink" onclick="openAuthModal('register')">立即注册</a>
+            </div>
+
+            <div class="modal-footer">
+                🔒 安全加密传输 · 你的数据只属于你
             </div>
         </div>
     </div>
 
-    <script src="/static/app.js"></script>
+    <script src="/static/app.js?v=12"></script>
 </body>
 </html>

@@ -395,12 +395,39 @@ function validateGenerateForm(topic, keyword) {
         function openAuthModal(mode) {
             authMode = mode;
             document.getElementById('authModal').classList.add('show');
-            document.getElementById('authTitle').textContent = mode === 'login' ? '登录' : '注册';
+            document.getElementById('authTitle').textContent = mode === 'login' ? '欢迎回来' : '创建账号';
+            document.getElementById('authSubtitle').textContent = mode === 'login' ? '登录你的账号，继续创作之旅' : '注册墨韵账号，开启 AI 创作之旅';
             document.getElementById('authSubmit').textContent = mode === 'login' ? '登录' : '注册';
             document.getElementById('switchText').textContent = mode === 'login' ? '还没有账号？' : '已有账号？';
-            document.getElementById('switchLink').textContent = mode === 'login' ? '注册' : '登录';
+            document.getElementById('switchLink').textContent = mode === 'login' ? '立即注册' : '去登录';
             document.getElementById('authError').classList.remove('show');
+            // 注册时显示手机号和验证码字段
+            document.getElementById('phoneGroup').style.display = mode === 'register' ? 'block' : 'none';
+            document.getElementById('codeGroup').style.display = mode === 'register' ? 'block' : 'none';
+            // 添加历史记录，按返回键时关闭弹窗而非退出网页
+            history.pushState({ modalOpen: true }, '');
         }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.remove('show');
+            if (history.state && history.state.modalOpen) {
+                history.back();
+            }
+        }
+
+        // 监听浏览器返回键，关闭弹窗
+        window.addEventListener('popstate', function(e) {
+            if (e.state && e.state.modalOpen) {
+                document.getElementById('authModal').classList.remove('show');
+            }
+        });
+
+        // 点击弹窗遮罩层关闭弹窗
+        document.addEventListener('click', function(e) {
+            if (e.target.id === 'authModal') {
+                closeAuthModal();
+            }
+        });
 
         function submitAuth() {
             const username = document.getElementById('authUsername').value.trim();
@@ -440,7 +467,6 @@ function validateGenerateForm(topic, keyword) {
             .then(data => {
                 const userInfo = document.getElementById('userInfo');
                 const authLink = document.getElementById('authLink');
-                const generateBtn = document.getElementById('generateBtn');
                 if (data.logged_in) {
                     userInfo.textContent = '👤 ' + data.username;
                     authLink.textContent = '退出';
@@ -448,20 +474,147 @@ function validateGenerateForm(topic, keyword) {
                         fetch('/api/logout', { method: 'POST' })
                         .then(() => location.reload());
                     };
-                    if (generateBtn) {
-                        generateBtn.onclick = () => generate();
-                        generateBtn.textContent = '✨ 开始创作';
-                    }
-                } else {
-                    userInfo.textContent = '游客';
-                    authLink.textContent = '登录 / 注册';
-                    authLink.onclick = () => openAuthModal('login');
-                    if (generateBtn) {
-                        generateBtn.onclick = () => openAuthModal('login');
-                        generateBtn.textContent = '🔑 登录后开始创作';
-                    }
                 }
             });
         }
 
-        checkUserStatus();
+        // 游客点击生成按钮时，检查登录状态
+        function handleGenerate() {
+            fetch('/api/user/status')
+            .then(res => res.json())
+            .then(data => {
+                if (data.logged_in) {
+                    generate();
+                } else {
+                    openAuthModal('login');
+                }
+            });
+        }
+
+        // 页面加载时不自动检查登录状态，避免触发任何弹窗
+        // 仅在用户登录成功后调用 checkUserStatus 更新顶栏
+
+        // ============================================================
+        // 会员购买流程
+        // ============================================================
+
+        function buyMembership(plan) {
+            // 先检查登录状态
+            fetch('/api/user/status')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.logged_in) {
+                    openAuthModal('login');
+                    return;
+                }
+                // 已登录，显示支付弹窗
+                showPaymentModal(plan);
+            });
+        }
+
+        function showPaymentModal(plan) {
+            const planNames = {
+                'basic_monthly': '一般会员（月付）',
+                'basic_yearly': '一般会员（年付）',
+                'gold_monthly': '黄金会员（月付）',
+                'gold_yearly': '黄金会员（年付）',
+            };
+            const planAmounts = {
+                'basic_monthly': 19,
+                'basic_yearly': 199,
+                'gold_monthly': 49,
+                'gold_yearly': 499,
+            };
+
+            const name = planNames[plan] || plan;
+            const amount = planAmounts[plan] || 0;
+
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay show';
+            overlay.id = 'paymentModal';
+            overlay.innerHTML = `
+                <div class="modal">
+                    <button class="modal-close" onclick="closePaymentModal()">✕</button>
+                    <div class="modal-icon">💳</div>
+                    <h2>确认支付</h2>
+                    <p class="modal-subtitle">${name} · ¥${amount}</p>
+                    <div class="form-group">
+                        <label>支付方式</label>
+                        <div class="pay-methods">
+                            <div class="pay-method selected" data-method="wechat" onclick="selectPayMethod(this)">
+                                <span class="pay-icon">💚</span>
+                                <span>微信支付</span>
+                            </div>
+                            <div class="pay-method" data-method="alipay" onclick="selectPayMethod(this)">
+                                <span class="pay-icon">💙</span>
+                                <span>支付宝</span>
+                            </div>
+                            <div class="pay-method" data-method="unionpay" onclick="selectPayMethod(this)">
+                                <span class="pay-icon">❤️</span>
+                                <span>云闪付</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="modal-btn" onclick="submitPayment('${plan}')">
+                        💰 确认支付 ¥${amount}
+                    </button>
+                    <div class="modal-footer">🔒 安全支付 · 即时开通</div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            history.pushState({ modalOpen: true }, '');
+        }
+
+        function closePaymentModal() {
+            const modal = document.getElementById('paymentModal');
+            if (modal) modal.remove();
+            if (history.state && history.state.modalOpen) {
+                history.back();
+            }
+        }
+
+        function selectPayMethod(el) {
+            document.querySelectorAll('.pay-method').forEach(m => m.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+
+        function submitPayment(plan) {
+            const payMethod = document.querySelector('.pay-method.selected')?.dataset?.method || 'wechat';
+            const btn = document.querySelector('#paymentModal .modal-btn');
+            btn.textContent = '⏳ 处理中...';
+            btn.disabled = true;
+
+            // 创建订单
+            fetch('/api/orders/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ plan: plan, pay_method: payMethod })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    showToast(data.error, 'error');
+                    btn.textContent = '💰 确认支付';
+                    btn.disabled = false;
+                    return;
+                }
+                // 模拟支付
+                return fetch('/api/orders/' + data.order.order_no + '/pay', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.message === '支付成功') {
+                    closePaymentModal();
+                    showToast('🎉 支付成功！会员已开通', 'success');
+                    setTimeout(() => location.reload(), 1500);
+                }
+            })
+            .catch(() => {
+                showToast('支付失败，请重试', 'error');
+                btn.textContent = '💰 确认支付';
+                btn.disabled = false;
+            });
+        }
