@@ -107,9 +107,12 @@ class TestAuthRequired:
         assert resp.status_code in (302, 401)
 
     def test_articles_list_requires_login(self, client):
-        """未登录访问文章列表应重定向"""
+        """未登录访问文章列表应返回 200 和空列表（游客模式）"""
         resp = client.get('/api/articles')
-        assert resp.status_code in (302, 401)
+        assert resp.status_code == 200
+        data = json.loads(resp.data)
+        assert data['logged_in'] == False
+        assert data['articles'] == []
 
     def test_export_requires_login(self, client):
         """未登录访问导出接口应重定向"""

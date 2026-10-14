@@ -677,14 +677,12 @@ def api_article_score(article_id):
 # ============================================================
 
 @app.route('/api/articles', methods=['GET'])
-@login_required
 def api_article_list():
-    query = Article.query
-    if current_user.is_authenticated:
-        query = query.filter_by(user_id=current_user.id)
-    else:
-        query = query.filter_by(user_id=None)
+    """文章列表（可选登录：未登录返回空列表，已登录返回用户文章）"""
+    if not current_user.is_authenticated:
+        return jsonify({'articles': [], 'logged_in': False})
 
+    query = Article.query.filter_by(user_id=current_user.id)
     keyword = (request.args.get('q') or '').strip()
     genre = (request.args.get('genre') or '').strip()
     fav = (request.args.get('fav') or '').strip()
@@ -698,7 +696,7 @@ def api_article_list():
         query = query.filter_by(is_favorite=True)
 
     articles = query.order_by(Article.created_at.desc()).all()
-    return jsonify({'articles': [a.to_dict() for a in articles]})
+    return jsonify({'articles': [a.to_dict() for a in articles], 'logged_in': True})
 
 
 @app.route('/api/articles/<int:article_id>/rename', methods=['PUT'])
