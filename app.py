@@ -2,12 +2,14 @@ import os
 import threading
 import uuid
 import io
+import time
 import logging
 from logging.handlers import TimedRotatingFileHandler
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for, send_file
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from prometheus_client import Counter, Histogram, generate_latest, REGISTRY
 from models import db, User, Article, Chapter
 from generator import get_genres
 from ai_generator import generate_article_ai, generate_long_article_ai, test_connection, generate_outline_ai, generate_single_chapter_ai
@@ -27,6 +29,17 @@ def safe_get(data, key, default='', coerce=None):
         except (ValueError, TypeError):
             val = default
     return val
+
+# Prometheus 指标
+REQUEST_COUNT = Counter(
+    'flask_http_requests_total', 'Total HTTP requests',
+    ['method', 'endpoint', 'status']
+)
+REQUEST_LATENCY = Histogram(
+    'flask_http_request_duration_seconds', 'HTTP request latency',
+    ['method', 'endpoint']
+)
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////var/lib/flask-app/articles.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -54,6 +67,30 @@ limiter = Limiter(
     default_limits=["200 per day", "50 per hour"],
     storage_uri="memory://",
 )
+
+
+# Prometheus 请求中间件
+@app.before_request
+def before_request():
+    request._start_time = time.time()
+
+
+@app.after_request
+def after_request(response):
+    if hasattr(request, '_start_time'):
+        elapsed = time.time() - request._start_time
+        endpoint = request.endpoint or 'unknown'
+        REQUEST_COUNT.labels(
+            method=request.method,
+            endpoint=endpoint,
+            status=response.status_code
+        ).inc()
+        REQUEST_LATENCY.labels(
+            method=request.method,
+            endpoint=endpoint
+        ).observe(elapsed)
+    return response
+
 
 db.init_app(app)
 
@@ -701,6 +738,12 @@ def health():
         'database_error': db_error,
         'timestamp': int(time.time()),
     }), 200 if db_ok else 503
+
+
+@app.route('/metrics')
+def metrics():
+    """Prometheus 指标端点"""
+    return generate_latest(REGISTRY), 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
 
 # ============================================================

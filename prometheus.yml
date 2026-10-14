@@ -1,0 +1,23 @@
+# Prometheus 监控配置
+# 用法: docker run -d -p 9090:9090 -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'moyun-flask'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['app:8000']
+        labels:
+          service: 'moyun'
+          env: 'production'
+
+  - job_name: 'moyun-nginx'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['nginx:80']
+        labels:
+          service: 'moyun-nginx'
+          env: 'production'
